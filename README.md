@@ -77,7 +77,3 @@ Les dades reflecteixen exportacions declarades i poden presentar diferències de
 United Nations Statistics Division. *UN Comtrade Database*. https://comtradeplus.un.org/.
 
 Les dades d'UN Comtrade estan subjectes als termes i les condicions d'ús de les Nacions Unides. Abans de redistribuir les dades originals, consulta l'[acord de llicència](https://comtradeplus.un.org/LicenseAgreement) i la [política de redistribució de dades](https://uncomtrade.org/docs/re-dissemination-of-data/).
-
----
-
-*Projecte de visualització de dades comercials amb finalitats exploratòries i informatives.*
