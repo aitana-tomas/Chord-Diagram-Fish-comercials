@@ -1,0 +1,82 @@
+<!doctype html>
+<!-- Pàgina principal: estructura HTML i càrrega dels fitxers necessaris. -->
+<html lang="ca">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Diagrama de cordes interactiu dels fluxos comercials internacionals de productes aquàtics, 2024.">
+  <title>Corrents comercials — Diagrama de cordes</title>
+  <!-- Els estils i els scripts es mantenen separats per facilitar-ne el manteniment. -->
+  <link rel="stylesheet" href="css/style.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+  <script defer src="js/trade-data.js"></script>
+  <script defer src="js/country-ca.js"></script>
+  <script defer src="js/app.js"></script>
+</head>
+<body>
+  <main class="page">
+    <!-- Capçalera breu: títol i descripció de la visualització. -->
+    <header class="intro">
+      <div class="eyebrow">COMERÇ · 2024</div>
+      <h1>Corrents comercials<span>.</span></h1>
+      <p>Fluxos transfronterers de peix i productes aquàtics entre països.</p>
+    </header>
+    <!-- Zona principal del diagrama i controls per triar els països. -->
+    <section class="viz" aria-label="Diagrama de cordes interactiu">
+      <div class="toolbar" aria-label="Controls del diagrama">
+        <div class="mode-switch" role="group" aria-label="Mode de selecció de països">
+          <button id="topMode" class="mode-button is-active" type="button" aria-pressed="true">Països principals</button>
+          <button id="manualMode" class="mode-button" type="button" aria-pressed="false">Tria països</button>
+        </div>
+        <label id="countControl" class="select-wrap" aria-label="Nombre de països principals"><span>Països</span>
+          <input id="countryCount" type="number" inputmode="numeric" min="2" max="237" step="1" value="12" aria-label="Nombre de països principals" title="Escriu quants països principals vols mostrar">
+        </label>
+        <button id="resetButton" class="icon-button" type="button" aria-label="Reinicia la vista" title="Reinicia la vista">↺</button>
+      </div>
+      <!-- El selector manual només es mostra quan l’usuari el demana. -->
+      <section id="countryPicker" class="country-picker" hidden aria-label="Tria països manualment">
+        <div class="picker-head"><label class="search-wrap"><span class="sr-only">Cerca països</span><input id="countrySearch" type="search" placeholder="Cerca països…" autocomplete="off"></label><span id="selectedCount" class="selected-count">0 seleccionats</span></div>
+        <div id="countryOptions" class="country-options"></div>
+        <div class="picker-foot"><span>Tria almenys dos països</span><button id="clearCountries" type="button">Neteja</button></div>
+      </section>
+      <!-- D3 dibuixa el diagrama dins d’aquest contenidor. -->
+      <div id="chart" class="chart" aria-label="Diagrama de cordes"></div>
+      <div id="status" class="status" role="status">Carregant dades…</div>
+    </section>
+    <!-- Citació curta sempre visible, sense carregar visualment la pàgina. -->
+    <div class="source-citation">Font de les dades: United Nations Statistics Division, <a href="https://comtradeplus.un.org/" target="_blank" rel="noopener noreferrer"><em>UN Comtrade Database</em></a>.</div>
+    <!-- Les icones obren els apartats informatius integrats a la pàgina. -->
+    <section class="project-info" aria-label="Informació sobre les dades">
+      <button class="info-dot" type="button" data-info="visualitzacio" aria-label="Sobre la visualització" title="Visualització" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="14" r="4.2"/><circle cx="16.5" cy="8" r="3"/><circle cx="17" cy="17" r="1.5"/></svg>
+      </button>
+      <button class="info-dot" type="button" data-info="limitacions" aria-label="Limitacions i interpretació" title="Limitacions i interpretació" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 21 20H3z"/><path d="M12 9v5M12 17.2v.1"/></svg>
+      </button>
+      <button class="info-dot" type="button" data-info="font" aria-label="Font de les dades i llicència" title="Font de les dades i llicència" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h8l4 4v13H6z"/><path d="M14 3.5v4h4M9 12h6M9 15.5h6"/></svg>
+      </button>
+      <button class="info-dot" type="button" data-info="preparacio" aria-label="Fitxer original i tractament" title="Fitxer original i tractament" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="8" cy="18" r="2"/></svg>
+      </button>
+    </section>
+    <!-- Contingut dels apartats informatius; no és una finestra emergent. -->
+    <section id="infoPanel" class="info-panel" aria-live="polite" hidden>
+      <div class="info-panel-heading"><div class="detail-kicker"></div><h2 id="infoPanelTitle"></h2></div>
+      <div id="infoPanelContent" class="info-modal-content"></div>
+    </section>
+    <!-- Tooltip de les cordes i diàleg amb el resum del país seleccionat. -->
+    <div id="chordTooltip" class="chord-tooltip" role="tooltip" hidden></div>
+    <div id="countryModal" class="modal-backdrop" hidden>
+      <section class="country-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <button id="closeModal" class="close-button modal-close" type="button" aria-label="Tanca">×</button>
+        <div class="detail-kicker">RESUM DEL PAÍS</div>
+        <h2 id="modalTitle"></h2>
+        <div class="modal-total-label">Comerç bilateral registrat</div><div id="modalTotal" class="detail-value"></div>
+        <div class="modal-stats"><div><span>Exportacions</span><strong id="modalExports"></strong></div><div><span>Importacions</span><strong id="modalImports"></strong></div><div><span>Socis comercials</span><strong id="modalPartners"></strong></div></div>
+        <div class="modal-subtitle">Principals connexions</div><div id="modalPartnersList" class="modal-partners-list"></div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
